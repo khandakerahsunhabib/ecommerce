@@ -1,22 +1,25 @@
 name: ecommerce
-description: "A new Flutter project."
-
+description: "Ecommerce project for ostad batch seven"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.5.3
+  flutter: 3.24.3
 
 dependencies:
   flutter:
     sdk: flutter
-
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.0.16
   email_validator: ^3.0.0
   pin_code_fields: ^8.0.1
   get: ^4.6.6
+  carousel_slider: ^5.0.0
+  http: ^1.2.2
+  logger: ^2.5.0
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +31,7 @@ flutter:
 
   assets:
     - assets/images/
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
