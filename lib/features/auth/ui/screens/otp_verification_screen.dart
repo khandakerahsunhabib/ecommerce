@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:ecommerce/app/app_colors.dart';
+import 'package:ecommerce/app/app_constant.dart';
+import 'package:ecommerce/features/auth/ui/screens/complete_profile_screen.dart';
 import 'package:ecommerce/features/auth/ui/widgets/app_logo_widget.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -14,6 +18,26 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final TextEditingController _otpTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final RxInt _remainingTime = AppConstant.resendOtpTimeOutInSecs.obs;
+  late Timer timer;
+  final RxBool _enableResendCodeButton = false.obs;
+  @override
+  void initState() {
+    super.initState();
+    _startResendCodeTimer();
+  }
+
+  void _startResendCodeTimer() {
+    _enableResendCodeButton.value = false;
+    _remainingTime.value = AppConstant.resendOtpTimeOutInSecs;
+    timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      _remainingTime.value--;
+      if (_remainingTime.value == 0) {
+        t.cancel();
+        _enableResendCodeButton.value = true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,31 +85,42 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 ElevatedButton(
                   onPressed: () {
                     // if (_formKey.currentState!.validate()) {}
+                    Navigator.pushNamed(context, CompleteProfileScreen.name);
                   },
                   child: const Text("Next"),
                 ),
                 const SizedBox(height: 24),
-                //TODO: enable button when 120s done and invisible the text
-                // stream, timer(setState), getX(obs)
-                RichText(
-                  text: const TextSpan(
-                    text: 'This code will be expire in',
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '120s',
-                        style: TextStyle(
-                          color: AppColors.themeColor,
+                Obx(
+                  () => Visibility(
+                    visible: !_enableResendCodeButton.value,
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'This code will be expire in',
+                        style: const TextStyle(
+                          color: Colors.grey,
                         ),
+                        children: [
+                          TextSpan(
+                            text: '${_remainingTime.value}s',
+                            style: const TextStyle(
+                              color: AppColors.themeColor,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Resend Code'),
+                Obx(
+                  () => Visibility(
+                    visible: _enableResendCodeButton.value,
+                    child: TextButton(
+                      onPressed: () {
+                        _startResendCodeTimer();
+                      },
+                      child: const Text('Resend Code'),
+                    ),
+                  ),
                 )
               ],
             ),
@@ -93,5 +128,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 }
